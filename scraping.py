@@ -94,9 +94,33 @@ def sign(x):
     return r
 
 def moneyline_factor(k):
-    (int(k) / 100) ** sign(int(k))
+    return abs(int(k) / 100) ** sign(int(k))
 
-bets
+def moneyline_arb(x1,x2,y1,y2):
+    arb1 = max(int(x1),int(y2)) + min(int(x1),int(y2))
+    arb2 = max(int(y1),int(x2)) + min(int(y1),int(x2))
+
+    if arb1 > arb2:
+        best_mix = 'site_x_team_1 & site_y_team_2'
+    else:
+        best_mix = 'site_y_team_1 & site_x_team_2'
+
+    best_arb = max(arb1,arb2)
+
+    return (best_arb > 0), best_arb, best_mix
+
 bets_bovada = bets[bets['site']=='Bovada']
 bets_betonline = bets[bets['site']=='BetOnline']
 bets_joined = bets_bovada.merge(bets_betonline, how='inner', on=['sport','team_1','team_2'])
+bets_joined['bet_mix'] = [moneyline_arb(x1,x2,y1,y2)[2] for x1,x2,y1,y2 in zip(bets_joined['team_1_bet_x'],
+                                                                              bets_joined['team_2_bet_x'],
+                                                                              bets_joined['team_1_bet_y'],
+                                                                              bets_joined['team_2_bet_y'],)]
+bets_joined['moneyline_arb'] = [moneyline_arb(x1,x2,y1,y2)[0] for x1,x2,y1,y2 in zip(bets_joined['team_1_bet_x'],
+                                                                              bets_joined['team_2_bet_x'],
+                                                                              bets_joined['team_1_bet_y'],
+                                                                              bets_joined['team_2_bet_y'],)]
+bets_joined['moneyline_arb_amount'] = [moneyline_arb(x1,x2,y1,y2)[1] for x1,x2,y1,y2 in zip(bets_joined['team_1_bet_x'],
+                                                                              bets_joined['team_2_bet_x'],
+                                                                              bets_joined['team_1_bet_y'],
+                                                                              bets_joined['team_2_bet_y'],)]
