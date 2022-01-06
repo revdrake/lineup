@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -11,21 +12,21 @@ site_tags = {'Bovada':{'Name': ['name'], 'Lines':['bet-price','empty-bet']},
 
 url_info = {'Site': ['BetOnline',
                      'BetOnline',
-                     'Bovada',
-                     'Bovada',
-                     'Bovada',
+                     # 'Bovada',
+                     # 'Bovada',
+                     # 'Bovada',
                     ],
             'Sport': ['NFL',
                       'NHL/VHL',
-                      'NBA',
-                      'NFL',
-                      'NHL/VHL',
+                      # 'NBA',
+                      # 'NFL',
+                      # 'NHL/VHL',
                      ],
             'URL':['https://www.betonline.ag/sportsbook/football/nfl',
                    'https://www.betonline.ag/sportsbook/hockey/nhl',
-                   'https://www.bovada.lv/sports/basketball/nba',
-                   'https://www.bovada.lv/sports/football',
-                   'https://www.bovada.lv/sports/hockey',
+                   # 'https://www.bovada.lv/sports/basketball/nba',
+                   # 'https://www.bovada.lv/sports/football',
+                   # 'https://www.bovada.lv/sports/hockey',
                   ],}
 
 sites, sports, urls = url_info['Site'], url_info['Sport'], url_info['URL']
@@ -34,14 +35,17 @@ options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
 options.add_argument('--incognito')
 options.add_argument('--headless')
-driver = webdriver.Chrome("/Users/drake.hilliard/Desktop/chromedriver", options=options)
+s = Service(executable_path='/usr/local/bin/chromedriver')
+#
+driver = webdriver.Chrome(service=s, options=options)
+# driver = webdriver.Chrome("/Users/drake.hilliard/Desktop/chromedriver", options=options)
 
 for site, sport, url in zip(sites, sports, urls):
     driver.get(url)
     time.sleep(3) # need, not only on clicks
     page_source = driver.page_source
 
-    soup = BeautifulSoup(page_source)
+    soup = BeautifulSoup(page_source, features="lxml")
     team_names = [tag.text for tag in soup.find_all(class_=site_tags[site]['Name'])]
 
     if site == 'BetOnline':
@@ -124,3 +128,5 @@ bets_joined['moneyline_arb_amount'] = [moneyline_arb(x1,x2,y1,y2)[1] for x1,x2,y
                                                                               bets_joined['team_2_bet_x'],
                                                                               bets_joined['team_1_bet_y'],
                                                                               bets_joined['team_2_bet_y'],)]
+
+print(bets)
